@@ -155,11 +155,11 @@ def extract_company_name(soup, plain_text):
     return "Company Name Not Found"
 
 def extract_skills(text):
-    """Extract skills from text."""
+    """Extract skills from text using a combination of predefined keywords and dynamic extraction."""
     found_skills = []
     text_lower = text.lower()
     
-    # Search for each skill in the text
+    # First pass: Use the predefined skills list
     for skill in SKILL_KEYWORDS:
         skill_lower = skill.lower()
         # Use word boundary to match whole words only
@@ -168,23 +168,85 @@ def extract_skills(text):
             found_skills.append(skill)
     
     # Find skills in common sections like "Requirements" or "Qualifications"
-    skill_sections = re.findall(r'(?:requirements|qualifications|skills needed|what you\'ll need|what you need)(?::|.{0,10})\s*(.*?)(?:(?:\n\n)|responsibilities|about the role|about us|what we offer)', 
-                              text_lower, re.DOTALL)
+    skill_sections_patterns = [
+        r'(?:requirements|qualifications|skills needed|what you\'ll need|what you need|skills|technical skills|technical requirements)(?::|.{0,10})\s*(.*?)(?:(?:\n\n)|responsibilities|about the role|about us|what we offer|benefits)',
+        r'(?:experience|expertise|proficiency)(?::|.{0,10})\s*(.*?)(?:(?:\n\n)|responsibilities|qualifications|about the role|about us|what we offer|benefits)'
+    ]
+    
+    skill_sections = []
+    for pattern in skill_sections_patterns:
+        sections = re.findall(pattern, text_lower, re.DOTALL)
+        skill_sections.extend(sections)
     
     if skill_sections:
-        # Extract bullet points or list items which often contain skills
         for section in skill_sections:
-            # Look for bullet points (•, -, *, etc.)
+            # Extract bullet points or list items 
             bullet_items = re.findall(r'(?:•|-|\*|\d+\.)\s*(.*?)(?:\n|$)', section)
+            
+            # If no bullet points found, try to split by sentences or commas
+            if not bullet_items:
+                # Try to split by sentences first
+                sentences = re.split(r'(?<=[.!?])\s+', section)
+                bullet_items = [s.strip() for s in sentences if s.strip()]
+            
             for item in bullet_items:
-                # Check if any SKILL_KEYWORDS are in this bullet point
-                item_lower = item.lower()
+                item = item.strip()
+                if not item:
+                    continue
+                
+                # Look for technical skills in the bullet point
+                # First check if any known skills are mentioned
                 for skill in SKILL_KEYWORDS:
                     skill_lower = skill.lower()
-                    if skill_lower in item_lower and skill not in found_skills:
+                    if (f" {skill_lower} " in f" {item.lower()} " or 
+                        item.lower().startswith(skill_lower + " ") or 
+                        item.lower().endswith(" " + skill_lower)) and skill not in found_skills:
                         found_skills.append(skill)
+                
+                # Then look for potential new skills (technical terms often have specific patterns)
+                # Look for terms that might be technologies, programming languages, frameworks, etc.
+                potential_skills = re.findall(r'\b([A-Z][a-zA-Z0-9]*(?:\s[A-Z][a-zA-Z0-9]*)*|[A-Za-z0-9]+\+\+|[A-Za-z0-9]+\#|[a-z][a-zA-Z0-9]+(?:\.js|\.NET))\b', item)
+                for skill in potential_skills:
+                    skill = skill.strip()
+                    # Ignore very common words and short terms
+                    if (len(skill) > 2 and 
+                        skill.lower() not in ['the', 'and', 'for', 'with', 'using', 'have', 'has', 'had', 'our', 'that', 'this'] and
+                        skill not in found_skills):
+                        found_skills.append(skill)
+                        
+                # Extract technical terms from the item
+                # Look for phrases like "experience with X", "knowledge of X", etc.
+                experience_patterns = [
+                    r'experience (?:with|in|using) ([^,.;]+)',
+                    r'knowledge of ([^,.;]+)',
+                    r'proficiency in ([^,.;]+)',
+                    r'familiarity with ([^,.;]+)',
+                    r'expertise in ([^,.;]+)',
+                    r'understanding of ([^,.;]+)',
+                    r'skilled in ([^,.;]+)',
+                    r'proficient in ([^,.;]+)'
+                ]
+                
+                for pattern in experience_patterns:
+                    matches = re.findall(pattern, item.lower())
+                    for match in matches:
+                        # Split by 'and' or commas to get individual skills
+                        skills_parts = re.split(r'\s+and\s+|,\s*', match)
+                        for part in skills_parts:
+                            part = part.strip()
+                            if part and len(part) > 2 and part not in found_skills:
+                                found_skills.append(part)
     
-    return sorted(found_skills) if found_skills else ["No specific skills identified"]
+    # Remove duplicates while preserving case
+    unique_skills = []
+    lower_skills = set()
+    
+    for skill in found_skills:
+        if skill.lower() not in lower_skills:
+            lower_skills.add(skill.lower())
+            unique_skills.append(skill)
+    
+    return sorted(unique_skills) if unique_skills else ["No specific skills identified"]
 
 def extract_experience(text):
     """Extract experience requirements from text."""

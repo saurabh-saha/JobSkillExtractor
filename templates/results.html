@@ -110,20 +110,29 @@
                     </div>
                     <div class="card-body">
                         {% if job_details.skills and job_details.skills|length > 0 and job_details.skills[0] != "No specific skills identified" %}
-                            <div class="d-flex flex-wrap">
+                            <!-- Group skills by categories for better organization -->
+                            <div class="d-flex flex-wrap justify-content-start">
                                 {% for skill in job_details.skills %}
-                                    <span class="badge bg-secondary skill-badge">{{ skill }}</span>
+                                    <span class="badge bg-secondary skill-badge mb-2 me-2">{{ skill }}</span>
                                 {% endfor %}
                             </div>
                             
-                            <div class="mt-4 text-end">
-                                <button class="btn btn-sm btn-outline-info copy-btn" data-target="skills-list">
-                                    <i class="fas fa-copy me-1"></i>Copy Skills
-                                </button>
-                                
-                                <!-- Hidden element for copying -->
-                                <div id="skills-list" class="d-none">{{ job_details.skills|join(', ') }}</div>
+                            <div class="mt-4 d-flex justify-content-between">
+                                <div>
+                                    <span class="text-muted small">
+                                        <i class="fas fa-info-circle me-1"></i>
+                                        {{ job_details.skills|length }} skills identified
+                                    </span>
+                                </div>
+                                <div>
+                                    <button class="btn btn-sm btn-outline-info copy-btn" data-target="skills-list">
+                                        <i class="fas fa-copy me-1"></i>Copy Skills
+                                    </button>
+                                </div>
                             </div>
+                            
+                            <!-- Hidden element for copying -->
+                            <div id="skills-list" class="d-none">{{ job_details.skills|join(', ') }}</div>
                         {% else %}
                             <div class="alert alert-warning mb-0">
                                 <i class="fas fa-exclamation-triangle me-2"></i>
