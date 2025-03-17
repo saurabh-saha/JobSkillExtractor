@@ -387,8 +387,18 @@ def extract_responsibilities(text):
         if not bullet_items:
             lines = [line.strip() for line in responsibilities_text.split('\n') if line.strip()]
             if lines:
-                formatted_responsibilities = ["• " + line for line in lines]
-                return formatted_responsibilities
+                formatted_responsibilities = []
+                for line in lines:
+                    if not line or len(line) < 10:
+                        continue
+                    # Limit to a reasonable length
+                    if len(line) > 80:
+                        truncated = line[:80].rsplit(' ', 1)[0] + "..."
+                        formatted_responsibilities.append("• " + truncated)
+                    else:
+                        formatted_responsibilities.append("• " + line)
+                if formatted_responsibilities:
+                    return formatted_responsibilities[:10]
     
     # Define more general patterns to look for responsibility sections
     responsibility_patterns = [
@@ -415,8 +425,18 @@ def extract_responsibilities(text):
                 # First try to split by newlines, as each line might be a separate responsibility
                 lines = [line.strip() for line in responsibilities_text.split('\n') if line.strip()]
                 if lines:
-                    formatted_responsibilities = ["• " + line for line in lines]
-                    return formatted_responsibilities
+                    formatted_responsibilities = []
+                    for line in lines:
+                        if not line or len(line) < 10:
+                            continue
+                        # Limit to a reasonable length
+                        if len(line) > 80:
+                            truncated = line[:80].rsplit(' ', 1)[0] + "..."
+                            formatted_responsibilities.append("• " + truncated)
+                        else:
+                            formatted_responsibilities.append("• " + line)
+                    if formatted_responsibilities:
+                        return formatted_responsibilities[:10]
                 
                 # If that doesn't work, try to split by sentences
                 sentences = re.split(r'(?<=[.!?])\s+', responsibilities_text)
@@ -526,8 +546,18 @@ def extract_qualifications(text):
         if not bullet_items:
             lines = [line.strip() for line in qualifications_text.split('\n') if line.strip()]
             if lines:
-                formatted_qualifications = ["• " + line for line in lines]
-                return formatted_qualifications
+                formatted_qualifications = []
+                for line in lines:
+                    if not line or len(line) < 10:
+                        continue
+                    # Limit to a reasonable length
+                    if len(line) > 80:
+                        truncated = line[:80].rsplit(' ', 1)[0] + "..."
+                        formatted_qualifications.append("• " + truncated)
+                    else:
+                        formatted_qualifications.append("• " + line)
+                if formatted_qualifications:
+                    return formatted_qualifications[:10]
     
     # Define more general patterns to look for qualification sections
     qualification_patterns = [
