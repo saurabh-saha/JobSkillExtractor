@@ -3,9 +3,15 @@ import logging
 from bs4 import BeautifulSoup
 import trafilatura
 
+# Import LLM extractor
+from llm_extractor import extract_with_llm, check_ollama_available
+
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
+
+# Check if Ollama is available - will determine whether to use LLM or regex
+OLLAMA_AVAILABLE = check_ollama_available()
 
 # Define skill-related keywords
 SKILL_KEYWORDS = [
