@@ -1,12 +1,17 @@
 import os
 import logging
+import traceback
 from flask import Flask, render_template, request, jsonify, redirect, url_for, session, flash
 from scraper import scrape_job_posting
 from text_processor import extract_job_details
 
 # Configure logging
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.DEBUG, 
+                    format='%(asctime)s %(levelname)s:%(name)s: %(message)s',
+                    datefmt='%Y-%m-%d %H:%M:%S')
 logger = logging.getLogger(__name__)
+
+logger.info("Starting application...")
 
 # Initialize Flask app
 app = Flask(__name__)
@@ -15,7 +20,14 @@ app.secret_key = os.environ.get("SESSION_SECRET", "dev-secret-key")
 @app.route('/', methods=['GET'])
 def index():
     """Render the main page with the scraper form."""
+    logger.info("Index route accessed")
     return render_template('index.html')
+
+@app.route('/health', methods=['GET'])
+def health_check():
+    """Simple health check endpoint."""
+    logger.info("Health check endpoint accessed")
+    return jsonify({"status": "ok", "message": "Application is running"})
 
 @app.route('/scrape', methods=['POST'])
 def scrape():

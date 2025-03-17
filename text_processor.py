@@ -164,6 +164,21 @@ def extract_company_name(soup, plain_text):
 
 def extract_skills(text):
     """Extract skills from text using a combination of predefined keywords and dynamic extraction."""
+    # Try LLM-based extraction if Ollama is available
+    if OLLAMA_AVAILABLE:
+        logger.info("Using LLM-based extraction for skills")
+        try:
+            llm_results = extract_with_llm(text, "skills")
+            if llm_results and len(llm_results) > 0:
+                # Remove bullet points if they are present
+                clean_skills = [s.replace('• ', '') if s.startswith('• ') else s for s in llm_results]
+                return sorted(clean_skills)
+            logger.warning("LLM extraction returned no results for skills, falling back to regex")
+        except Exception as e:
+            logger.error(f"Error in LLM-based extraction for skills: {e}")
+            logger.info("Falling back to regex-based extraction")
+    
+    # Fallback to regex-based extraction if LLM is not available or fails
     found_skills = []
     text_lower = text.lower()
     
@@ -258,6 +273,22 @@ def extract_skills(text):
 
 def extract_experience(text):
     """Extract experience requirements from text."""
+    # Try LLM-based extraction if Ollama is available
+    if OLLAMA_AVAILABLE:
+        logger.info("Using LLM-based extraction for experience")
+        try:
+            llm_results = extract_with_llm(text, "experience")
+            if llm_results and len(llm_results) > 0:
+                # For experience, we expect a single string result
+                if isinstance(llm_results, list) and len(llm_results) > 0:
+                    return llm_results[0].replace("• ", "")  # Remove bullet point if present
+                return llm_results
+            logger.warning("LLM extraction returned no results for experience, falling back to regex")
+        except Exception as e:
+            logger.error(f"Error in LLM-based extraction for experience: {e}")
+            logger.info("Falling back to regex-based extraction")
+    
+    # Fallback to regex-based extraction if LLM is not available or fails
     # Look for patterns like "X years of experience"
     for pattern in EXPERIENCE_PATTERNS:
         experience_match = re.search(pattern, text, re.IGNORECASE)
@@ -316,6 +347,22 @@ def extract_location(soup, text):
 
 def determine_role_type(text):
     """Determine if the role is for an individual contributor or team lead."""
+    # Try LLM-based extraction if Ollama is available
+    if OLLAMA_AVAILABLE:
+        logger.info("Using LLM-based extraction for role_type")
+        try:
+            llm_results = extract_with_llm(text, "role_type")
+            if llm_results:
+                # For role_type, we expect a single string result
+                if isinstance(llm_results, list) and len(llm_results) > 0:
+                    return llm_results[0].replace("• ", "")  # Remove bullet point if present
+                return llm_results
+            logger.warning("LLM extraction returned no results for role_type, falling back to regex")
+        except Exception as e:
+            logger.error(f"Error in LLM-based extraction for role_type: {e}")
+            logger.info("Falling back to regex-based extraction")
+    
+    # Fallback to regex-based extraction if LLM is not available or fails
     text_lower = text.lower()
     
     # Count occurrences of key phrases for each role type
@@ -375,6 +422,19 @@ def extract_description_excerpt(text, max_length=200):
 
 def extract_responsibilities(text):
     """Extract key responsibilities from the job description."""
+    # Try LLM-based extraction if Ollama is available
+    if OLLAMA_AVAILABLE:
+        logger.info("Using LLM-based extraction for responsibilities")
+        try:
+            llm_results = extract_with_llm(text, "responsibilities")
+            if llm_results and len(llm_results) > 0:
+                return llm_results
+            logger.warning("LLM extraction returned no results for responsibilities, falling back to regex")
+        except Exception as e:
+            logger.error(f"Error in LLM-based extraction for responsibilities: {e}")
+            logger.info("Falling back to regex-based extraction")
+    
+    # Fallback to regex-based extraction if LLM is not available or fails
     # Check for specific standalone "Key Responsibilities:" section first - very specific pattern
     standalone_match = re.search(r'Key\s+Responsibilities\s*:\s*\n\s*((?:.+\n)+?)(?:\n\n|\n\s*Qualifications)', 
                                text, re.IGNORECASE | re.DOTALL)
@@ -534,6 +594,19 @@ def extract_responsibilities(text):
 
 def extract_qualifications(text):
     """Extract qualifications and skills requirements from the job description."""
+    # Try LLM-based extraction if Ollama is available
+    if OLLAMA_AVAILABLE:
+        logger.info("Using LLM-based extraction for qualifications")
+        try:
+            llm_results = extract_with_llm(text, "qualifications")
+            if llm_results and len(llm_results) > 0:
+                return llm_results
+            logger.warning("LLM extraction returned no results for qualifications, falling back to regex")
+        except Exception as e:
+            logger.error(f"Error in LLM-based extraction for qualifications: {e}")
+            logger.info("Falling back to regex-based extraction")
+    
+    # Fallback to regex-based extraction if LLM is not available or fails
     # Check for specific standalone "Qualifications & Skills:" section first - very specific pattern
     standalone_match = re.search(r'Qualifications\s+&\s+Skills\s*:\s*\n\s*((?:.+\n)+?)(?:\n\n|\nLocation)', 
                            text, re.IGNORECASE | re.DOTALL)

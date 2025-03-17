@@ -66,6 +66,28 @@ def extract_with_llm(text: str, extraction_type: str) -> List[str]:
             
             Only return the JSON list, nothing else."""
             
+        elif extraction_type == "experience":
+            system_prompt = """You are an expert job analyst. Extract the years of experience required from the provided job description.
+            Consider phrases like "X years of experience", "entry-level", "junior", "senior", etc.
+            
+            Format your response as a single string, such as:
+            "3+ years of experience required"
+            "Entry-level position"
+            "Senior-level position (5+ years experience)"
+            
+            Only return the experience requirement as a string, nothing else."""
+            
+        elif extraction_type == "role_type":
+            system_prompt = """You are an expert job analyst. Determine if the role is primarily an individual contributor role 
+            or a team lead/management role based on the job description.
+            
+            Format your response as one of the following strings:
+            "Individual Contributor" - for roles focused on individual work rather than managing others
+            "Team Lead/Manager" - for roles with people management or leadership responsibilities
+            "Role type unclear (possibly both IC and leadership aspects)" - if it has elements of both
+            
+            Only return one of these three options as a string, nothing else."""
+            
         else:
             raise ValueError(f"Unknown extraction type: {extraction_type}")
         
@@ -174,4 +196,5 @@ def check_ollama_available() -> bool:
             return False
     except Exception as e:
         logger.error(f"Failed to connect to Ollama: {e}")
+        logger.warning("Will use fallback extraction methods instead of LLM")
         return False
