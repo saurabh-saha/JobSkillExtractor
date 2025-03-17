@@ -239,6 +239,70 @@
                         </div>
                     </div>
                     
+                    <!-- Key Responsibilities Section -->
+                    <div class="col-md-6 mb-4">
+                        <div class="result-panel">
+                            <div class="panel-header">
+                                <h4 class="h5 mb-0"><i class="fas fa-tasks me-2"></i>Key Responsibilities</h4>
+                            </div>
+                            <div class="panel-body bg-dark">
+                                {% if job_details.responsibilities and job_details.responsibilities|length > 0 %}
+                                    <ul class="list-unstyled responsibilities-list">
+                                        {% for responsibility in job_details.responsibilities %}
+                                            <li class="mb-2">{{ responsibility }}</li>
+                                        {% endfor %}
+                                    </ul>
+                                    
+                                    <div class="mt-3 text-end">
+                                        <button class="btn btn-sm btn-outline-info copy-btn" data-target="responsibilities-list">
+                                            <i class="fas fa-copy me-1"></i>Copy Responsibilities
+                                        </button>
+                                        
+                                        <!-- Hidden element for copying -->
+                                        <div id="responsibilities-list" class="d-none">{{ job_details.responsibilities|join('\n') }}</div>
+                                    </div>
+                                {% else %}
+                                    <div class="alert alert-warning mb-0">
+                                        <i class="fas fa-exclamation-triangle me-2"></i>
+                                        No specific responsibilities were found in this job posting.
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Qualifications Section -->
+                    <div class="col-md-6 mb-4">
+                        <div class="result-panel">
+                            <div class="panel-header">
+                                <h4 class="h5 mb-0"><i class="fas fa-clipboard-check me-2"></i>Qualifications & Requirements</h4>
+                            </div>
+                            <div class="panel-body bg-dark">
+                                {% if job_details.qualifications and job_details.qualifications|length > 0 %}
+                                    <ul class="list-unstyled qualifications-list">
+                                        {% for qualification in job_details.qualifications %}
+                                            <li class="mb-2">{{ qualification }}</li>
+                                        {% endfor %}
+                                    </ul>
+                                    
+                                    <div class="mt-3 text-end">
+                                        <button class="btn btn-sm btn-outline-info copy-btn" data-target="qualifications-list">
+                                            <i class="fas fa-copy me-1"></i>Copy Qualifications
+                                        </button>
+                                        
+                                        <!-- Hidden element for copying -->
+                                        <div id="qualifications-list" class="d-none">{{ job_details.qualifications|join('\n') }}</div>
+                                    </div>
+                                {% else %}
+                                    <div class="alert alert-warning mb-0">
+                                        <i class="fas fa-exclamation-triangle me-2"></i>
+                                        No specific qualifications were found in this job posting.
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
                     <!-- Source Info -->
                     <div class="col-md-6 mb-4">
                         <div class="result-panel">

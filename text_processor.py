@@ -85,7 +85,9 @@ def extract_job_details(html_content, url):
         'experience': extract_experience(plain_text),
         'location': extract_location(soup, plain_text),
         'role_type': determine_role_type(plain_text),
-        'description_excerpt': extract_description_excerpt(plain_text)
+        'description_excerpt': extract_description_excerpt(plain_text),
+        'responsibilities': extract_responsibilities(plain_text),
+        'qualifications': extract_qualifications(plain_text)
     }
     
     logger.debug(f"Extracted job details: {job_details}")
@@ -364,3 +366,73 @@ def extract_description_excerpt(text, max_length=200):
     if len(text) > max_length:
         return text[:max_length-3] + "..."
     return text
+
+def extract_responsibilities(text):
+    """Extract key responsibilities from the job description."""
+    # Define patterns to look for responsibility sections
+    responsibility_patterns = [
+        r'(?:key\s+)?responsibilities(?:\s*:|\s*\n)(.*?)(?:\n\n|\n\s*(?:qualifications|requirements|skills|about|apply|benefits))',
+        r'(?:key\s+)?duties(?:\s*:|\s*\n)(.*?)(?:\n\n|\n\s*(?:qualifications|requirements|skills|about|apply|benefits))',
+        r'what\s+you\'ll\s+(?:do|be\s+doing)(?:\s*:|\s*\n)(.*?)(?:\n\n|\n\s*(?:qualifications|requirements|skills|about|apply|benefits))',
+        r'job\s+(?:duties|functions)(?:\s*:|\s*\n)(.*?)(?:\n\n|\n\s*(?:qualifications|requirements|skills|about|apply|benefits))',
+        r'the\s+role(?:\s*:|\s*\n)(.*?)(?:\n\n|\n\s*(?:qualifications|requirements|skills|about|apply|benefits))'
+    ]
+    
+    for pattern in responsibility_patterns:
+        match = re.search(pattern, text, re.IGNORECASE | re.DOTALL)
+        if match:
+            responsibilities_text = match.group(1).strip()
+            
+            # Extract bullet points or numbered items
+            bullet_items = re.findall(r'(?:•|-|\*|\d+\.)\s*(.*?)(?:\n|$)', responsibilities_text)
+            
+            # If no bullet points found, try to split by sentences
+            if not bullet_items:
+                sentences = re.split(r'(?<=[.!?])\s+', responsibilities_text)
+                bullet_items = [s.strip() for s in sentences if s.strip()]
+            
+            # Format as a list with bullet points
+            if bullet_items:
+                formatted_responsibilities = ["• " + item.strip() for item in bullet_items if item.strip()]
+                return formatted_responsibilities
+            
+            # If no structured format found, return the whole section
+            return [responsibilities_text]
+    
+    # If no responsibility section found
+    return ["No specific responsibilities section found in the job posting."]
+
+def extract_qualifications(text):
+    """Extract qualifications and skills requirements from the job description."""
+    # Define patterns to look for qualification sections
+    qualification_patterns = [
+        r'(?:key\s+)?qualifications(?:\s*:|\s*\n)(.*?)(?:\n\n|\n\s*(?:responsibilities|about|apply|benefits|company|compensation))',
+        r'(?:key\s+)?requirements(?:\s*:|\s*\n)(.*?)(?:\n\n|\n\s*(?:responsibilities|about|apply|benefits|company|compensation))',
+        r'skills(?:\s+required|needed)?(?:\s*:|\s*\n)(.*?)(?:\n\n|\n\s*(?:responsibilities|about|apply|benefits|company|compensation))',
+        r'what\s+you\'ll\s+need(?:\s*:|\s*\n)(.*?)(?:\n\n|\n\s*(?:responsibilities|about|apply|benefits|company|compensation))',
+        r'we\'re\s+looking\s+for(?:\s*:|\s*\n)(.*?)(?:\n\n|\n\s*(?:responsibilities|about|apply|benefits|company|compensation))'
+    ]
+    
+    for pattern in qualification_patterns:
+        match = re.search(pattern, text, re.IGNORECASE | re.DOTALL)
+        if match:
+            qualifications_text = match.group(1).strip()
+            
+            # Extract bullet points or numbered items
+            bullet_items = re.findall(r'(?:•|-|\*|\d+\.)\s*(.*?)(?:\n|$)', qualifications_text)
+            
+            # If no bullet points found, try to split by sentences
+            if not bullet_items:
+                sentences = re.split(r'(?<=[.!?])\s+', qualifications_text)
+                bullet_items = [s.strip() for s in sentences if s.strip()]
+            
+            # Format as a list with bullet points
+            if bullet_items:
+                formatted_qualifications = ["• " + item.strip() for item in bullet_items if item.strip()]
+                return formatted_qualifications
+            
+            # If no structured format found, return the whole section
+            return [qualifications_text]
+    
+    # If no qualification section found
+    return ["No specific qualifications section found in the job posting."]
