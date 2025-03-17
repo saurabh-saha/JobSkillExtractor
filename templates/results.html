@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Job Analysis Results | Job Posting Analyzer</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.replit.com/agent/bootstrap-agent-dark-theme.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/custom.css') }}">
+</head>
+<body>
+    <!-- Main content container -->
+    <div class="container main-container py-4">
+        <!-- Header section -->
+        <header class="mb-5">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <a href="{{ url_for('index') }}" class="btn btn-outline-primary">
+                    <i class="fas fa-arrow-left me-2"></i>New Analysis
+                </a>
+                <h1 class="h3 mb-0 text-center flex-grow-1">
+                    <i class="fas fa-chart-pie me-2"></i>Job Analysis Results
+                </h1>
+                <div style="width: 100px;"></div> <!-- Spacer for centering -->
+            </div>
+            
+            {% if job_details.title and job_details.title != "Job Title Not Found" %}
+                <div class="bg-primary text-white p-4 rounded-3 mb-4">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <h2 class="h3 mb-2">{{ job_details.title }}</h2>
+                            {% if job_details.company and job_details.company != "Company Name Not Found" %}
+                                <p class="mb-0 fs-5">{{ job_details.company }}</p>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                            <a href="{{ source_url }}" target="_blank" class="btn btn-light">
+                                <i class="fas fa-external-link-alt me-1"></i> View Original Posting
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+        </header>
+        
+        <!-- Alert container for error messages -->
+        <div id="alert-container" class="mb-4">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+        </div>
+
+        <!-- Results content -->
+        <div class="row">
+            <!-- Overview Panel -->
+            <div class="col-md-6 mb-4">
+                <div class="card h-100 job-card shadow">
+                    <div class="card-header bg-secondary">
+                        <h3 class="h5 mb-0"><i class="fas fa-info-circle me-2"></i>Quick Overview</h3>
+                    </div>
+                    <div class="card-body">
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item d-flex justify-content-between align-items-start">
+                                <div>
+                                    <span class="fw-bold"><i class="fas fa-map-marker-alt me-2"></i>Location:</span>
+                                </div>
+                                <span class="ms-2">{{ job_details.location }}</span>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between align-items-start">
+                                <div>
+                                    <span class="fw-bold"><i class="fas fa-clock me-2"></i>Experience:</span>
+                                </div>
+                                <span class="ms-2">{{ job_details.experience }}</span>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between align-items-start">
+                                <div>
+                                    <span class="fw-bold"><i class="fas fa-user-tie me-2"></i>Role Type:</span>
+                                </div>
+                                <span class="ms-2">{{ job_details.role_type }}</span>
+                            </li>
+                        </ul>
+                        
+                        {% if job_details.description_excerpt %}
+                            <div class="mt-4">
+                                <h4 class="h6 fw-bold text-muted"><i class="fas fa-file-alt me-2"></i>Description Excerpt:</h4>
+                                <p class="text-muted fst-italic">{{ job_details.description_excerpt }}</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Skills Panel -->
+            <div class="col-md-6 mb-4">
+                <div class="card h-100 job-card shadow">
+                    <div class="card-header bg-info text-dark">
+                        <h3 class="h5 mb-0"><i class="fas fa-tools me-2"></i>Skills Required</h3>
+                    </div>
+                    <div class="card-body">
+                        {% if job_details.skills and job_details.skills|length > 0 and job_details.skills[0] != "No specific skills identified" %}
+                            <div class="d-flex flex-wrap">
+                                {% for skill in job_details.skills %}
+                                    <span class="badge bg-secondary skill-badge">{{ skill }}</span>
+                                {% endfor %}
+                            </div>
+                            
+                            <div class="mt-4 text-end">
+                                <button class="btn btn-sm btn-outline-info copy-btn" data-target="skills-list">
+                                    <i class="fas fa-copy me-1"></i>Copy Skills
+                                </button>
+                                
+                                <!-- Hidden element for copying -->
+                                <div id="skills-list" class="d-none">{{ job_details.skills|join(', ') }}</div>
+                            </div>
+                        {% else %}
+                            <div class="alert alert-warning mb-0">
+                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                No specific skills were identified in this job posting. This might be due to:
+                                <ul class="mt-2 mb-0">
+                                    <li>The job posting uses non-standard terminology</li>
+                                    <li>Skills are presented in a format our analyzer couldn't detect</li>
+                                    <li>The posting focuses more on qualifications or experience than specific skills</li>
+                                </ul>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Detailed Analysis Card -->
+        <div class="card mt-3 shadow-lg job-card">
+            <div class="card-header bg-success text-white">
+                <h3 class="h4 mb-0"><i class="fas fa-chart-bar me-2"></i>Detailed Analysis</h3>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <!-- Experience Analysis -->
+                    <div class="col-md-6 mb-4">
+                        <div class="result-panel">
+                            <div class="panel-header">
+                                <h4 class="h5 mb-0"><i class="fas fa-briefcase me-2"></i>Experience Requirements</h4>
+                            </div>
+                            <div class="panel-body bg-dark">
+                                <p>{{ job_details.experience }}</p>
+                                
+                                <div class="alert alert-secondary">
+                                    <i class="fas fa-lightbulb me-2"></i>
+                                    <strong>Insight:</strong>
+                                    {% if "years" in job_details.experience %}
+                                        {% set years = job_details.experience.split('+')[0]|int if '+' in job_details.experience else job_details.experience.split(' ')[0]|int %}
+                                        {% if years <= 2 %}
+                                            This appears to be an entry-level or junior position, suitable for early-career professionals.
+                                        {% elif years <= 5 %}
+                                            This is a mid-level position requiring some professional experience in the field.
+                                        {% else %}
+                                            This is a senior-level position requiring substantial experience in the field.
+                                        {% endif %}
+                                    {% elif "entry" in job_details.experience.lower() %}
+                                        This appears to be an entry-level position, potentially suitable for recent graduates.
+                                    {% elif "senior" in job_details.experience.lower() %}
+                                        This appears to be a senior-level position requiring substantial experience.
+                                    {% else %}
+                                        Experience requirements aren't clearly specified. Consider reaching out to the employer for clarification.
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Role Type Analysis -->
+                    <div class="col-md-6 mb-4">
+                        <div class="result-panel">
+                            <div class="panel-header">
+                                <h4 class="h5 mb-0"><i class="fas fa-sitemap me-2"></i>Role Type Analysis</h4>
+                            </div>
+                            <div class="panel-body bg-dark">
+                                <p>{{ job_details.role_type }}</p>
+                                
+                                <div class="alert alert-secondary">
+                                    <i class="fas fa-lightbulb me-2"></i>
+                                    <strong>What this means:</strong>
+                                    {% if "Individual Contributor" in job_details.role_type %}
+                                        This role focuses primarily on your own work and deliverables rather than managing others. You'll likely be responsible for executing tasks and projects directly.
+                                    {% elif "Team Lead" in job_details.role_type or "Manager" in job_details.role_type %}
+                                        This role involves leadership responsibilities. You'll likely be guiding a team, delegating tasks, and being accountable for team performance and deliverables.
+                                    {% else %}
+                                        This role may include aspects of both individual work and team leadership. The exact balance may vary or become clearer during the interview process.
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Location Analysis -->
+                    <div class="col-md-6 mb-4">
+                        <div class="result-panel">
+                            <div class="panel-header">
+                                <h4 class="h5 mb-0"><i class="fas fa-globe-americas me-2"></i>Location Details</h4>
+                            </div>
+                            <div class="panel-body bg-dark">
+                                <p>{{ job_details.location }}</p>
+                                
+                                <div class="alert alert-secondary">
+                                    <i class="fas fa-lightbulb me-2"></i>
+                                    <strong>Work Arrangement:</strong>
+                                    {% if "remote" in job_details.location.lower() %}
+                                        This appears to be a remote position that allows you to work from anywhere.
+                                    {% elif "hybrid" in job_details.location.lower() %}
+                                        This appears to be a hybrid position, combining remote work with some in-office time.
+                                    {% elif "on-site" in job_details.location.lower() or "office" in job_details.location.lower() %}
+                                        This appears to be an on-site position requiring regular presence at the office.
+                                    {% else %}
+                                        The work arrangement isn't clearly specified. Consider asking about remote/hybrid options during the interview process.
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Source Info -->
+                    <div class="col-md-6 mb-4">
+                        <div class="result-panel">
+                            <div class="panel-header">
+                                <h4 class="h5 mb-0"><i class="fas fa-link me-2"></i>Source Information</h4>
+                            </div>
+                            <div class="panel-body bg-dark">
+                                <p class="text-truncate">
+                                    <strong>URL:</strong> 
+                                    <a href="{{ source_url }}" target="_blank" class="text-info">
+                                        {{ source_url }}
+                                    </a>
+                                </p>
+                                
+                                <div class="alert alert-secondary">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    <strong>Note:</strong>
+                                    This analysis is based on the content available at the time of scraping. Job postings may be updated or removed by employers.
+                                </div>
+                                
+                                <div class="text-end mt-3">
+                                    <a href="{{ url_for('index') }}" class="btn btn-primary">
+                                        <i class="fas fa-search me-1"></i>Analyze Another Job
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Footer -->
+        <footer class="mt-5 pt-4 text-center text-muted">
+            <p>
+                <i class="fas fa-code me-2"></i>Job Posting Analyzer
+                <span class="mx-2">|</span>
+                <i class="fas fa-shield-alt me-1"></i> Privacy-focused: We don't store scraped job data
+            </p>
+        </footer>
+    </div>
+    
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Custom JS -->
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>
