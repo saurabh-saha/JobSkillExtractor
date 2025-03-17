@@ -422,13 +422,56 @@ def extract_responsibilities(text):
                 sentences = re.split(r'(?<=[.!?])\s+', responsibilities_text)
                 bullet_items = [s.strip() for s in sentences if s.strip()]
             
-            # Format as a list with bullet points
+            # Format as a list with bullet points - keep them concise
             if bullet_items:
-                formatted_responsibilities = ["• " + item.strip() for item in bullet_items if item.strip()]
-                return formatted_responsibilities
+                formatted_responsibilities = []
+                for item in bullet_items:
+                    item = item.strip()
+                    if not item:
+                        continue
+                    # Limit to a reasonable length
+                    if len(item) > 80:
+                        # Try to truncate at a logical point
+                        truncated = item[:80].rsplit(' ', 1)[0] + "..."
+                        formatted_responsibilities.append("• " + truncated)
+                    else:
+                        formatted_responsibilities.append("• " + item)
+                return formatted_responsibilities[:10]  # Limit to 10 items
             
-            # If no structured format found, return the whole section
-            return [responsibilities_text]
+            # If no structured format found, try to break into smaller chunks
+            sentences = re.split(r'(?<=[.!?])\s+', responsibilities_text)
+            if sentences:
+                formatted_sentences = []
+                for sentence in sentences:
+                    sentence = sentence.strip()
+                    if not sentence or len(sentence) < 10:
+                        continue
+                    # Limit to a reasonable length
+                    if len(sentence) > 80:
+                        truncated = sentence[:80].rsplit(' ', 1)[0] + "..."
+                        formatted_sentences.append("• " + truncated)
+                    else:
+                        formatted_sentences.append("• " + sentence)
+                if formatted_sentences:
+                    return formatted_sentences[:8]  # Limit to 8 to avoid overwhelming
+            
+            # Last resort - extract key phrases
+            keywords = ["manage", "develop", "create", "implement", "support", "collaborate"]
+            phrases = []
+            for keyword in keywords:
+                matches = re.finditer(rf'\b{keyword}\b.*?\.', responsibilities_text, re.IGNORECASE)
+                for match in matches:
+                    phrase = match.group(0).strip()
+                    if 10 < len(phrase) < 80:
+                        phrases.append("• " + phrase)
+            if phrases:
+                return phrases[:8]
+                
+            # If all else fails, return a chunked version of the text
+            if len(responsibilities_text) > 80:
+                chunks = [responsibilities_text[i:i+80] for i in range(0, len(responsibilities_text), 80)]
+                return ["• " + chunk + "..." for chunk in chunks[:5]]
+            return ["• " + responsibilities_text]
     
     # If still not found, look for any paragraph that seems to describe job duties
     # This is a fallback approach with looser pattern matching
@@ -512,20 +555,73 @@ def extract_qualifications(text):
                 # First try to split by newlines, as each line might be a separate qualification
                 lines = [line.strip() for line in qualifications_text.split('\n') if line.strip()]
                 if lines:
-                    formatted_qualifications = ["• " + line for line in lines]
-                    return formatted_qualifications
+                    formatted_qualifications = []
+                    for line in lines:
+                        if not line or len(line) < 10:
+                            continue
+                        # Limit to a reasonable length
+                        if len(line) > 80:
+                            truncated = line[:80].rsplit(' ', 1)[0] + "..."
+                            formatted_qualifications.append("• " + truncated)
+                        else:
+                            formatted_qualifications.append("• " + line)
+                    if formatted_qualifications:
+                        return formatted_qualifications[:10]
                 
                 # If that doesn't work, try to split by sentences
                 sentences = re.split(r'(?<=[.!?])\s+', qualifications_text)
                 bullet_items = [s.strip() for s in sentences if s.strip()]
             
-            # Format as a list with bullet points
+            # Format as a list with bullet points - keep them concise
             if bullet_items:
-                formatted_qualifications = ["• " + item.strip() for item in bullet_items if item.strip()]
-                return formatted_qualifications
+                formatted_qualifications = []
+                for item in bullet_items:
+                    item = item.strip()
+                    if not item:
+                        continue
+                    # Limit to a reasonable length
+                    if len(item) > 80:
+                        # Try to truncate at a logical point
+                        truncated = item[:80].rsplit(' ', 1)[0] + "..."
+                        formatted_qualifications.append("• " + truncated)
+                    else:
+                        formatted_qualifications.append("• " + item)
+                return formatted_qualifications[:10]  # Limit to 10 items
             
-            # If no structured format found, return the whole section
-            return [qualifications_text]
+            # If no structured format found, try to break into smaller chunks
+            sentences = re.split(r'(?<=[.!?])\s+', qualifications_text)
+            if sentences:
+                formatted_sentences = []
+                for sentence in sentences:
+                    sentence = sentence.strip()
+                    if not sentence or len(sentence) < 10:
+                        continue
+                    # Limit to a reasonable length
+                    if len(sentence) > 80:
+                        truncated = sentence[:80].rsplit(' ', 1)[0] + "..."
+                        formatted_sentences.append("• " + truncated)
+                    else:
+                        formatted_sentences.append("• " + sentence)
+                if formatted_sentences:
+                    return formatted_sentences[:8]  # Limit to 8 to avoid overwhelming
+            
+            # Last resort - extract key phrases
+            keywords = ["experience", "knowledge", "degree", "skills", "proficient", "education"]
+            phrases = []
+            for keyword in keywords:
+                matches = re.finditer(rf'\b{keyword}\b.*?\.', qualifications_text, re.IGNORECASE)
+                for match in matches:
+                    phrase = match.group(0).strip()
+                    if 10 < len(phrase) < 80:
+                        phrases.append("• " + phrase)
+            if phrases:
+                return phrases[:8]
+                
+            # If all else fails, return a chunked version of the text
+            if len(qualifications_text) > 80:
+                chunks = [qualifications_text[i:i+80] for i in range(0, len(qualifications_text), 80)]
+                return ["• " + chunk + "..." for chunk in chunks[:5]]
+            return ["• " + qualifications_text]
     
     # If still not found, look for any paragraph that seems to describe qualifications
     # This is a fallback approach with looser pattern matching
