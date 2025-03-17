@@ -1,0 +1,29 @@
+Engineering Manager ($50K - $150K)
+
+CodeRound AI is at the forefront of AI innovation, developing cutting-edge language models and AI solutions. We're seeking an experienced Engineering Manager to lead our growing team of AI engineers.
+
+Key Responsibilities:
+
+Lead and mentor a team of engineers in designing and deploying AI-driven applications.
+Architect, develop, and optimize LLM-based AI solutions for real-world use cases.
+Collaborate with data scientists, engineers, and product teams to build scalable AI pipelines.
+Optimize AI models for performance, accuracy, and cost-efficiency.
+Work with APIs, vector databases, and retrieval-augmented generation (RAG) techniques.
+Ensure code quality, security, and best engineering practices in development workflows.
+Stay updated with emerging AI/ML technologies and industry trends to drive innovation.
+Provide technical guidance on AI infrastructure, model deployment, and DevOps practices.
+
+Qualifications & Skills:
+
+3+ years of experience in engineering management, preferably in AI/ML domains
+Strong programming skills in Python and experience with AI frameworks (PyTorch, TensorFlow)
+Proven track record of delivering production-ready AI applications
+Experience with modern LLM deployment techniques, including prompt engineering
+Familiarity with cloud platforms (AWS, GCP, Azure) and containerization (Docker, Kubernetes)
+Understanding of DevOps practices and CI/CD pipelines for ML/AI systems
+Excellent communication and leadership skills, with ability to translate technical concepts
+Bachelor's degree in Computer Science, Engineering, or related field (or equivalent experience)
+
+Location: Remote, with periodic in-person meetings at our India office
+
+We offer competitive compensation, equity, flexible work arrangements, and the opportunity to work on cutting-edge AI technology that impacts millions of users.
