@@ -107,25 +107,17 @@
 }
 
 /* Responsibilities and Qualifications lists */
-.responsibilities-list li, 
-.qualifications-list li {
-    position: relative;
-    margin-bottom: 0.75rem;
-    padding-left: 0.5rem;
-    line-height: 1.5;
-    color: var(--bs-light);
+.responsibilities-list, 
+.qualifications-list {
+    padding-left: 0;
 }
 
-.responsibilities-list li:before,
-.qualifications-list li:before {
-    content: '';
-    position: absolute;
-    left: -0.5rem;
-    top: 0.5rem;
-    width: 0.5rem;
-    height: 0.5rem;
-    background-color: var(--bs-info);
-    border-radius: 50%;
+.responsibilities-list li, 
+.qualifications-list li {
+    margin-bottom: 0.75rem;
+    line-height: 1.5;
+    color: var(--bs-light);
+    list-style-type: none;
 }
 
 /* Add a subtle hover effect for list items */

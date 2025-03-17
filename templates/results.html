@@ -247,9 +247,9 @@
                             </div>
                             <div class="panel-body bg-dark">
                                 {% if job_details.responsibilities and job_details.responsibilities|length > 0 %}
-                                    <ul class="list-unstyled responsibilities-list">
+                                    <ul class="responsibilities-list">
                                         {% for responsibility in job_details.responsibilities %}
-                                            <li class="mb-2">{{ responsibility }}</li>
+                                            <li class="mb-2">{{ responsibility | safe }}</li>
                                         {% endfor %}
                                     </ul>
                                     
@@ -279,9 +279,9 @@
                             </div>
                             <div class="panel-body bg-dark">
                                 {% if job_details.qualifications and job_details.qualifications|length > 0 %}
-                                    <ul class="list-unstyled qualifications-list">
+                                    <ul class="qualifications-list">
                                         {% for qualification in job_details.qualifications %}
-                                            <li class="mb-2">{{ qualification }}</li>
+                                            <li class="mb-2">{{ qualification | safe }}</li>
                                         {% endfor %}
                                     </ul>
                                     
