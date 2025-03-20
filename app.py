@@ -6,7 +6,7 @@ from scraper import scrape_job_posting
 from text_processor import extract_job_details
 
 # Configure logging
-logging.basicConfig(level=logging.DEBUG, 
+logging.basicConfig(level=logging.ERROR,
                     format='%(asctime)s %(levelname)s:%(name)s: %(message)s',
                     datefmt='%Y-%m-%d %H:%M:%S')
 logger = logging.getLogger(__name__)

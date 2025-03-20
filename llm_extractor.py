@@ -10,44 +10,31 @@ from typing import Dict, List, Optional, Union, Any
 import ollama
 
 # Configure logging
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.ERROR)
 logger = logging.getLogger(__name__)
 
 # Define the model to use
-LLM_MODEL = "deepseek"  # Use DeepSeek model through Ollama
+LLM_MODEL = "llama3.2:latest"
+
 
 def extract_with_llm(text: str, extraction_type: str) -> List[str]:
-    """
-    Extract information from text using Ollama with DeepSeek LLM.
-    
-    Args:
-        text (str): The text to extract information from.
-        extraction_type (str): Type of information to extract (responsibilities, qualifications, etc.)
-        
-    Returns:
-        List[str]: List of extracted items as bullet points.
-    """
     try:
-        # Define prompts based on extraction type
         if extraction_type == "responsibilities":
-            system_prompt = """You are an expert job analyst. Extract the key job responsibilities from the provided job description. 
-            Return the responsibilities as a JSON list of strings. Each responsibility should:
-            1. Be concise (maximum 80 characters)
-            2. Start with an action verb when possible
-            3. Focus on one discrete task or duty
-            4. Not include bullet points or numbering (these will be added later)
-            
-            Format your response as a valid JSON list like this:
-            ["Responsibility 1", "Responsibility 2", "Responsibility 3"]
-            
-            Only return the JSON list, nothing else."""
+            system_prompt = """You are an expert job analyst. Extract key job responsibilities from the provided job description.
+                Rules for Responsibilities:
+                1. extract major skills/ tools/experience needed as 3-4 word pointers
+                   
+                Response Format:
+                Return a **valid JSON list** like this:  
+                ["Responsibility 1", "Responsibility 2", "Responsibility 3"]
+                
+                Only return the JSON list, nothing else.**
+            """
             
         elif extraction_type == "qualifications":
             system_prompt = """You are an expert job analyst. Extract the key qualifications, requirements and skills needed for the position from the provided job description.
             Return the qualifications as a JSON list of strings. Each qualification should:
-            1. Be concise (maximum 80 characters)
-            2. Focus on one discrete qualification, skill, or requirement
-            3. Not include bullet points or numbering (these will be added later)
+                1. extract major skills and tools alog with experience needed as 3-4 word pointers
             
             Format your response as a valid JSON list like this:
             ["Qualification 1", "Qualification 2", "Qualification 3"]
@@ -91,7 +78,6 @@ def extract_with_llm(text: str, extraction_type: str) -> List[str]:
         else:
             raise ValueError(f"Unknown extraction type: {extraction_type}")
         
-        # Truncate text if too long (many LLMs have context limits)
         max_text_length = 15000
         if len(text) > max_text_length:
             logger.warning(f"Text too long ({len(text)} chars), truncating to {max_text_length} chars")
@@ -112,17 +98,15 @@ def extract_with_llm(text: str, extraction_type: str) -> List[str]:
             ]
         )
         
-        # Extract the response content
         result = response['message']['content']
         logger.debug(f"LLM response for {extraction_type}: {result}")
-        
-        # Try to parse JSON from the response
+
         try:
             # Find JSON list in the response (handles cases where model adds extra text)
             json_start = result.find('[')
             json_end = result.rfind(']') + 1
-            
-            if json_start >= 0 and json_end > json_start:
+
+            if 0 <= json_start < json_end:
                 json_str = result[json_start:json_end]
                 parsed_list = json.loads(json_str)
                 
@@ -141,20 +125,10 @@ def extract_with_llm(text: str, extraction_type: str) -> List[str]:
         logger.error(f"Error in LLM extraction: {e}")
         return fallback_extraction(text, extraction_type)
 
+
 def fallback_extraction(text: str, extraction_type: str) -> List[str]:
-    """
-    Fallback method when LLM extraction fails.
-    Performs basic extraction based on keyword matching.
-    
-    Args:
-        text (str): The text to extract information from.
-        extraction_type (str): Type of information to extract
-        
-    Returns:
-        List[str]: List of extracted items.
-    """
     logger.info(f"Using fallback extraction for {extraction_type}")
-    
+
     if extraction_type == "responsibilities":
         keywords = ["responsible", "role", "duties", "will", "manage", "lead", "develop"]
     elif extraction_type == "qualifications":
@@ -177,24 +151,44 @@ def fallback_extraction(text: str, extraction_type: str) -> List[str]:
     # Return top results with bullet points added
     return [f"• {item}" for item in results[:8]]
 
+
 def check_ollama_available() -> bool:
-    """
-    Check if Ollama is available and the specified model is loaded.
-    
-    Returns:
-        bool: True if Ollama is available and model is loaded, False otherwise.
-    """
     try:
         response = ollama.list()
-        available_models = [model['name'] for model in response.get('models', [])]
-        
+
+        if not response or "models" not in response:
+            logger.error("Failed to retrieve model list from Ollama.")
+            return False
+
+        available_models = [model.get("model", "") for model in response.get("models", [])]
+
         if LLM_MODEL in available_models:
-            logger.info(f"Ollama is available and {LLM_MODEL} model is loaded")
+            logger.info(f"✅ Ollama is available and model '{LLM_MODEL}' is loaded.")
             return True
         else:
-            logger.warning(f"Ollama is available but {LLM_MODEL} model is not loaded")
+            logger.warning(f"⚠️ Ollama is available, but model '{LLM_MODEL}' is not loaded. Available models: {available_models}")
             return False
+
     except Exception as e:
-        logger.error(f"Failed to connect to Ollama: {e}")
-        logger.warning("Will use fallback extraction methods instead of LLM")
+        logger.error(f"❌ Failed to connect to Ollama: {e}")
+        logger.warning("⚠️ Will use fallback extraction methods instead of LLM.")
         return False
+
+
+if __name__ == '__main__':
+    check_ollama_available()
+    text = '''
+    • Proven track record in building and leading engineering teams.
+    
+    • Strong technical and product acumen with experience in internet-scale products/services across platforms (Mobile, Web, Backend).
+    
+    • Experience with distributed systems and microservices architectures in the Cloud (AWS/Azure/GCP).
+    
+    • Solid fundamentals in system design, OOP, design patterns, and non-functional requirements.
+    
+    • Exposure to the full product lifecycle: design, development, testing, CI/CD, monitoring, and maintenance.
+    
+    • Excellent communication skills, with the ability to present clearly at all levels.
+    
+    • Comfortable in a fast-paced, agile startup environment with a strong customer focus.     '''
+    print(extract_with_llm(text, 'qualifications'))
